@@ -2,6 +2,22 @@
 
 echo "<<< Start upgrade.lst updating >>>"
 
+version="$(cat gradle.properties | grep '^version' | sed 's/version=\([0-9]*\)[.].*$/\1/g' )"
+upgradle_log_path="db/src/main/resources/sql/work/updates/$version"
+upgradle_log="$upgradle_log_path/dblog.txt"
+upgradle_txt="db/src/main/resources/sql/work/updates/upgrade.txt"
+
+echo $(echo $upgradle_log | sed 's/\/.*%//g')
+
+if [ ! -f $upgradle_log_path ]; then
+    mkdir -p $upgradle_log_path
+fi
+
+if [ ! -f $upgradle_log ]; then
+    echo -n > $upgradle_log
+fi
+
+
 # Имя текущей ветки
 branch_name=$(git branch | grep "*" | sed "s/\* //")
 
@@ -9,31 +25,40 @@ branch_name=$(git branch | grep "*" | sed "s/\* //")
 merged_branch=$(git reflog -1 | cut -d" " -f 4 | sed 's/://')
 
 # Файл upgrade.lst
-upgradle_lst="db/src/main/resources/sql/work/updates/upgrade.lst"
+#upgradle_lst="db/src/main/resources/sql/work/updates/upgrade.lst"
+if [ ! -z $upgradle_log ]; then
+    echo "" >> $upgradle_log
+fi
+
+cat $upgradle_txt >> $upgradle_log
+echo -n > $upgradle_txt
+
+git add *
+git commit --all --amend --no-edit
 
 # Получим список файлов измененных в коммите
 files=$(git diff HEAD~ --name-only)
 
-# Отфильтруем sql скрипты
-files=$(echo "$files" | sed '/^db\/src\/main\/resources\/sql\/work\/updates\/data\/\([^\/]*\/\)*[^_][0-9]*_.*.sql$/!d' | sed 's/db\/src\/main\/resources\/sql\/work\/updates\///g')
-
-echo "Files to be added to upgrade.lst:\n$files\n"
-
-if [ "$files" != "" ]; then
-
-    cp -f $upgradle_lst dblog1
-
-    for file in $files
-    do
-        mv -f dblog1 dblog
-	    str="s/\(\/\/NEW_PATCH_GOES_ABOVE_THIS_LINE\)/"$(echo "$file" | sed 's/\//\\\//g')"\n\1/g"
-        sed $str dblog > dblog1
-    done
-
-    mv -f dblog1 $upgradle_lst
-
-    git add $upgradle_lst
-    git commit -m "Merge upgrade.lst"
-fi
+## Отфильтруем sql скрипты
+#files=$(echo "$files" | sed '/^db\/src\/main\/resources\/sql\/work\/updates\/data\/\([^\/]*\/\)*[^_][0-9]*_.*.sql$/!d' | sed 's/db\/src\/main\/resources\/sql\/work\/updates\///g')
+#
+#echo "Files to be added to upgrade.lst:\n$files\n"
+#
+#if [ "$files" != "" ]; then
+#
+#    cp -f $upgradle_lst dblog1
+#
+#    for file in $files
+#    do
+#        mv -f dblog1 dblog
+#	    str="s/\(\/\/NEW_PATCH_GOES_ABOVE_THIS_LINE\)/"$(echo "$file" | sed 's/\//\\\//g')"\n\1/g"
+#        sed $str dblog > dblog1
+#    done
+#
+#    mv -f dblog1 $upgradle_lst
+#
+#    git add $upgradle_lst
+#    git commit -m "Merge upgrade.lst"
+#fi
 
 echo "<<< Complete upgrade.lst updating >>>"
