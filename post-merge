@@ -3,8 +3,8 @@
 echo "<<< Start upgrade.lst updating >>>"
 
 version="$(cat gradle.properties | grep '^version' | sed 's/version=\([0-9]*\)[.].*$/\1/g' )"
-upgradle_log_path="db/src/main/resources/sql/work/updates/$version"
-upgradle_log="$upgradle_log_path/dblog.txt"
+upgradle_log_path="db/src/main/resources/sql/work/updates/def/$version"
+upgradle_log="$upgradle_log_path/db.def"
 upgradle_txt="db/src/main/resources/sql/work/updates/upgrade.txt"
 
 echo $(echo $upgradle_log | sed 's/\/.*%//g')
@@ -30,7 +30,7 @@ if [ ! -z $upgradle_log ]; then
     echo "" >> $upgradle_log
 fi
 
-cat $upgradle_txt >> $upgradle_log
+cat $upgradle_txt | sed '/^\s*$/d' >> $upgradle_log
 echo -n > $upgradle_txt
 
 git add *
