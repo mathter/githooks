@@ -36,29 +36,4 @@ echo -n > $upgradle_txt
 git add *
 git commit --all --amend --no-edit
 
-# Получим список файлов измененных в коммите
-files=$(git diff HEAD~ --name-only)
-
-## Отфильтруем sql скрипты
-#files=$(echo "$files" | sed '/^db\/src\/main\/resources\/sql\/work\/updates\/data\/\([^\/]*\/\)*[^_][0-9]*_.*.sql$/!d' | sed 's/db\/src\/main\/resources\/sql\/work\/updates\///g')
-#
-#echo "Files to be added to upgrade.lst:\n$files\n"
-#
-#if [ "$files" != "" ]; then
-#
-#    cp -f $upgradle_lst dblog1
-#
-#    for file in $files
-#    do
-#        mv -f dblog1 dblog
-#	    str="s/\(\/\/NEW_PATCH_GOES_ABOVE_THIS_LINE\)/"$(echo "$file" | sed 's/\//\\\//g')"\n\1/g"
-#        sed $str dblog > dblog1
-#    done
-#
-#    mv -f dblog1 $upgradle_lst
-#
-#    git add $upgradle_lst
-#    git commit -m "Merge upgrade.lst"
-#fi
-
 echo "<<< Complete upgrade.lst updating >>>"
